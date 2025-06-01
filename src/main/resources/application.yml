@@ -1,0 +1,56 @@
+### Basic Application Settings
+### Server Settings
+server:
+  port: 8888
+
+### Actuator Settings
+management:
+  endpoint:
+    health:
+      show-components: "always"
+
+### Data Source Settings
+spring:
+  application:
+    name: voting
+#  datasource:
+#    url: "jdbc:postgresql://localhost:5432/postgres?currentSchema=votedb"
+#    username: dbuser
+#    password: dbpwd
+  profiles:
+    active: ${ENV_PROFILE:local}
+  #banco
+  flyway:
+    enabled: true
+    url: "jdbc:postgresql://localhost:5432/postgres"
+    user: dbuser
+    password: dbpwd
+    baseline-on-migrate: true
+    schemas: votedb
+  #serializacao
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+      fail-on-numbers-for-enums: true
+    mapper:
+      accept-case-insensitive-enums: false
+  #jpa sql logs
+  jpa:
+    properties:
+      hibernate:
+        format_sql: true
+  reactor:
+    #show the context propagation for logs (traceId)
+    context-propagation: AUTO
+  #r2dbc
+  r2dbc:
+    url: "r2dbc:postgresql://localhost:5432/postgres?currentSchema=votedb"
+    username: dbuser
+    password: dbpwd
+
+api:
+  user:
+    url: "https://user-info.herokuapp.com/"

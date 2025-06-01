@@ -1,0 +1,27 @@
+version: "3.8"
+
+services:
+
+  postgres:
+    image: postgres:16.1-alpine3.18
+    container_name: vote-postgres 
+    restart: always
+    environment:
+    - POSTGRES_USER=dbuser
+    - POSTGRES_PASSWORD=dbpwd
+    ports:
+    - '5432:5432'
+    volumes:
+    - db_pg_volume:/var/lib/postgresql/data
+    networks:
+      - vote-net
+
+volumes:
+  db_pg_volume:
+
+networks:
+  vote-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 192.18.1.0/24

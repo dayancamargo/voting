@@ -22,7 +22,6 @@ spring:
     user: dbuser
     password: dbpwd
     baseline-on-migrate: true
-    schemas: votedb
   #serializacao
   jackson:
     default-property-inclusion: non_null

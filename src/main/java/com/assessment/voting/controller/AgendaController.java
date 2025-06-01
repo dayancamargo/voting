@@ -8,6 +8,7 @@ import com.assessment.voting.service.AgendaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
@@ -35,6 +36,7 @@ public class AgendaController {
     }
 
     @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
     public Mono<AgendaResponse> save(@Valid @RequestBody AgendaRequest agendaRequest) {
         log.info("Creating Agenda: {}", agendaRequest);
         return agendaService.save(agendaRequest);

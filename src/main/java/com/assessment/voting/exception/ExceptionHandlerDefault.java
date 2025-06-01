@@ -80,7 +80,7 @@ public class ExceptionHandlerDefault {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Error> handleException(Exception exception, ServerWebExchange exchange) {
-        log.error("Error generic: {}", exception.getMessage());
+        log.error("Error generic: {}", exception);
         return buildError(exception.getMessage(), null, HttpStatus.INTERNAL_SERVER_ERROR, exchange);
     }
 

@@ -1,6 +1,9 @@
 package com.assessment.voting.service;
 
 import com.assessment.voting.exception.SessionCannotBeOpenedException;
+import com.assessment.voting.model.agenda.AgendaEntity;
+import com.assessment.voting.model.agenda.AgendaRequest;
+import com.assessment.voting.model.agenda.AgendaResponse;
 import com.assessment.voting.model.agenda.OpenSessionRequest;
 import com.assessment.voting.repository.AgendaRepository;
 import org.junit.jupiter.api.Test;
@@ -28,12 +31,60 @@ class AgendaRequestServiceTest {
     private final OpenSessionRequest openSessionRequest = new OpenSessionRequest(1L, "HOURS", 2);
 
     @Test
+    void fetchAgendaByIdSuccessfully() {
+        AgendaEntity agendaEntity = new AgendaEntity(1L, "Agenda 1", null, null);
+
+        when(agendaRepository.findById(1L)).thenReturn(Mono.just(agendaEntity));
+
+        StepVerifier.create(agendaService.getAgendaById(1L))
+                .expectNext(new AgendaResponse(1L, "Agenda 1", null, null))
+                .verifyComplete();
+    }
+
+    @Test
+    void fetchAgendaByIdReturnsEmpty() {
+        when(agendaRepository.findById(1L)).thenReturn(Mono.empty());
+
+        StepVerifier.create(agendaService.getAgendaById(1L))
+                .verifyComplete();
+    }
+
+    @Test
+    void saveAgendaSuccessfully() {
+        AgendaRequest agendaRequest = new AgendaRequest(null, "Agenda 1");
+        AgendaEntity agendaEntity = new AgendaEntity(1L, "Agenda 1", null, null);
+
+        when(agendaRepository.save(any(AgendaEntity.class))).thenReturn(Mono.just(agendaEntity));
+
+        StepVerifier.create(agendaService.save(agendaRequest))
+                .expectNext(new AgendaResponse(1L, "Agenda 1", null, null))
+                .verifyComplete();
+    }
+
+    @Test
     void openSessionSuccessfully() {
         when(agendaRepository.isAbleToOpen(1L)).thenReturn(Mono.just(true));
         when(agendaRepository.openSession(any(), any(), any())).thenReturn(Mono.just(1));
 
         StepVerifier.create(agendaService.openSession(openSessionRequest))
-                .expectNext("Session opened successfully for agenda with id: 1")
+                .expectNextMatches(response ->
+                        response.id().equals(1L) &&
+                        response.startTime() != null &&
+                        response.endTime() != null &&
+                        response.startTime().isBefore(response.endTime()))
+                .verifyComplete();
+    }
+
+    @Test
+    void openSessionSuccessfullyWithoutInformedTime() {
+        var openSessionRequest = new OpenSessionRequest(1L, null, null);
+
+        when(agendaRepository.isAbleToOpen(1L)).thenReturn(Mono.just(true));
+        when(agendaRepository.openSession(any(), any(), any())).thenReturn(Mono.just(1));
+
+        StepVerifier.create(agendaService.openSession(openSessionRequest))
+                .expectNextMatches(response ->
+                        response.startTime().plusMinutes(1).equals(response.endTime()))
                 .verifyComplete();
     }
 
@@ -43,7 +94,7 @@ class AgendaRequestServiceTest {
 
         StepVerifier.create(agendaService.openSession(openSessionRequest))
                 .expectErrorMatches(throwable -> throwable instanceof SessionCannotBeOpenedException &&
-                        throwable.getMessage().equals("Not found a agenda able to open with id: 1"))
+                        throwable.getMessage().equals("Could not find a agenda able to open with id: 1"))
                 .verify();
     }
 

@@ -47,22 +47,42 @@ public class VoteService {
                 });
     }
 
+    public Mono<TotalVotes> countAllVotes(Long agendaId) {
+        log.info("Counting all votes for agenda with id: {}", agendaId);
+
+        return agendaService.getAgendaById(agendaId)
+                .switchIfEmpty(Mono.error(new NotFoundException("Agenda not found with id: " + agendaId)))
+                .flatMap(agenda -> Mono.zip(
+                        voteRepository.countByAgendaIdAndAnswer(agendaId, SimNaoEnum.SIM.name()),
+                        voteRepository.countByAgendaIdAndAnswer(agendaId, SimNaoEnum.NAO.name())
+                ).map(tuple -> {
+                    var simCount = tuple.getT1();
+                    var naoCount = tuple.getT2();
+                    log.info("Agenda: {}, SIM votes: {}, NAO votes: {}", agenda, simCount, naoCount);
+
+                    return new TotalVotes(agenda.id(),
+                                          agenda.name(),
+                                          Map.of(SimNaoEnum.SIM.name(), simCount, SimNaoEnum.NAO.name(), naoCount),
+                                          (simCount + naoCount));
+                }));
+    }
+
     private Mono<Boolean> validateCpf(VoteRequest voteRequest, AgendaResponse agenda) {
         return Mono.zip(
-            isAbleToVote(voteRequest.cpf()),
-            alreadyVoted(voteRequest, agenda)
+                isAbleToVote(voteRequest.cpf()),
+                alreadyVoted(voteRequest, agenda)
         ).flatMap(tuple -> {
             boolean isCpfValid = tuple.getT1();
             boolean alreadyVoted = tuple.getT2();
 
             log.info("CPF validation result: isCpfValid={}, alreadyVoted={}", isCpfValid, alreadyVoted);
 
-            if( !isCpfValid) {
-                return Mono.error(new CpfUnableToVote("CPF is not valid for voting: " + voteRequest.cpf()));
+            if (!isCpfValid) {
+                return Mono.error(new CpfUnableToVote(voteRequest.cpf()));
             }
 
             if (alreadyVoted) {
-                Mono.error(new CpfAlreadyVoted("CPF already voted in this agenda: " + voteRequest.cpf()));
+                return Mono.error(new CpfAlreadyVoted(voteRequest.cpf()));
             }
 
             return Mono.just(true);
@@ -75,25 +95,6 @@ public class VoteService {
 
     private Mono<Boolean> isAbleToVote(String cpf) {
         return userService.isCpfValid(cpf);
-    }
-
-    public Mono<TotalVotes> countAllVotes(Long agendaId) {
-        log.info("Counting all votes for agenda with id: {}", agendaId);
-
-        return agendaService.getAgendaById(agendaId)
-                .zipWith(
-                        Mono.zip(voteRepository.countByAgendaIdAndAnswer(agendaId, SimNaoEnum.SIM.name()),
-                                voteRepository.countByAgendaIdAndAnswer(agendaId, SimNaoEnum.NAO.name()))
-                ).map(tuple -> {
-                    var agenda = tuple.getT1();
-                    var simCount = tuple.getT2().getT1();
-                    var naoCount = tuple.getT2().getT2();
-                    log.info("Agenda: {}, SIM votes: {}, NAO votes: {}", agenda, simCount, naoCount);
-
-                    return new TotalVotes(agenda.id(), agenda.name(), Map.of("SIM", simCount, "NAO", naoCount), (simCount + naoCount));
-                })
-                .switchIfEmpty(Mono.error(new NotFoundException("Agenda not found with id: " + agendaId)));
-
     }
 
     private Mono<VoteResponse> saveVote(VoteEntity voteEntity) {

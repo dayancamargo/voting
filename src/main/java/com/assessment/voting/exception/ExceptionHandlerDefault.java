@@ -1,6 +1,5 @@
 package com.assessment.voting.exception;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -10,10 +9,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.bind.support.WebExchangeBindException;
-import org.springframework.web.reactive.function.server.EntityResponse;
 import org.springframework.web.server.MethodNotAllowedException;
+import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.ServerWebInputException;
-import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,25 +22,25 @@ import java.util.Map;
 public class ExceptionHandlerDefault {
 
     @ExceptionHandler(BusinessException.class)
-    public ResponseEntity<Error> handleBusinessException(BusinessException exception, HttpServletRequest request) {
+    public ResponseEntity<Error> handleBusinessException(BusinessException exception, ServerWebExchange exchange) {
         log.error("BusinessException: {}", exception.getMessage());
-        return buildError(exception.getMessage(), null, HttpStatus.BAD_REQUEST, request);
+        return buildError(exception.getMessage(), null, HttpStatus.BAD_REQUEST, exchange);
     }
 
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Error> handleNotFoundException(NotFoundException exception, HttpServletRequest request) {
+    public ResponseEntity<Error> handleNotFoundException(NotFoundException exception, ServerWebExchange exchange) {
         log.error("Error Not found: {}", exception.getMessage());
-        return buildError(exception.getMessage(), null, HttpStatus.NOT_FOUND, request);
+        return buildError(exception.getMessage(), null, HttpStatus.NOT_FOUND, exchange);
     }
 
     @ExceptionHandler(MethodNotAllowedException.class)
-    public ResponseEntity<Error> handleMethodNotAllowedException(MethodNotAllowedException exception, HttpServletRequest request) {
+    public ResponseEntity<Error> handleMethodNotAllowedException(MethodNotAllowedException exception, ServerWebExchange exchange) {
         log.error("Error: {}", exception.getMessage());
-        return buildError(exception.getMessage(), null, HttpStatus.METHOD_NOT_ALLOWED, request);
+        return buildError(exception.getMessage(), null, HttpStatus.METHOD_NOT_ALLOWED, exchange);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<Error> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception, HttpServletRequest request) {
+    public ResponseEntity<Error> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception, ServerWebExchange exchange) {
         log.error("Error handleMethodArgumentNotValidException: {}", exception.getMessage());
         Map<String, String> errors = new HashMap<>();
         exception.getBindingResult().getAllErrors().forEach(error -> {
@@ -51,11 +49,11 @@ public class ExceptionHandlerDefault {
             errors.merge(fieldName, errorMessage, (existing, newMessage) -> existing + "; " + newMessage);
         });
 
-        return buildError("Some fields are invalid", errors, HttpStatus.BAD_REQUEST, request);
+        return buildError("Some fields are invalid", errors, HttpStatus.BAD_REQUEST, exchange);
     }
 
     @ExceptionHandler(ServerWebInputException.class)
-    public ResponseEntity<Error> handleServerWebInputException(ServerWebInputException exception, HttpServletRequest request) {
+    public ResponseEntity<Error> handleServerWebInputException(ServerWebInputException exception, ServerWebExchange exchange) {
         log.error("Error handleServerWebInputException: {}", exception.getMessage());
         String errorMsg;
         Map<String, String> errors = new HashMap<>();
@@ -77,21 +75,20 @@ public class ExceptionHandlerDefault {
                     : "unknown";
             errorMsg = String.format(" Error %s On %s", detail, parameterName);
         }
-        return buildError(errorMsg, errors, HttpStatus.BAD_REQUEST, request);
+        return buildError(errorMsg, errors, HttpStatus.BAD_REQUEST, exchange);
     }
 
     @ExceptionHandler(Exception.class)
-
-    public ResponseEntity<Error> handleException(Exception exception, final HttpServletRequest request) {
+    public ResponseEntity<Error> handleException(Exception exception, ServerWebExchange exchange) {
         log.error("Error generic: {}", exception.getMessage());
-        return buildError(exception.getMessage(), null, HttpStatus.INTERNAL_SERVER_ERROR, request);
+        return buildError(exception.getMessage(), null, HttpStatus.INTERNAL_SERVER_ERROR, exchange);
     }
 
-    private ResponseEntity<Error> buildError(String message, Map<String, String> fields, HttpStatus status, HttpServletRequest request) {
+    private ResponseEntity<Error> buildError(String message, Map<String, String> fields, HttpStatus status, ServerWebExchange request) {
         var error = new Error(message,
                 status.value(),
-                request.getRequestURI(),
-                request.getMethod(),
+                request.getRequest().getURI().getPath(),
+                request.getRequest().getMethod().name(),
                 fields);
 
         return ResponseEntity.status(status).body(error);

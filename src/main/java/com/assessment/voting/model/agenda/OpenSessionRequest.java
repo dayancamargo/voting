@@ -7,6 +7,6 @@ import jakarta.validation.constraints.Positive;
 
 public record OpenSessionRequest(@NotNull Long agendaId,
                                  @ValidEnum(enumClass = TimeUnitEnum.class)
-                                 @NotNull String timeUnit,
-                                 @NotNull @Positive Integer quantity) {
+                                 String timeUnit,
+                                 @Positive Integer quantity) {
 }

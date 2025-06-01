@@ -21,8 +21,8 @@ public class UserClient {
         this.webClient = webClientBuilder.baseUrl(url).build();
     }
 
-
-    @CircuitBreaker(name = "user-api", fallbackMethod = "fallback")
+    //Como o serviço de validação de CPF  não estava funcionando, foi adicionado um fallback para simular a validação.
+    @CircuitBreaker(name = "user-api", fallbackMethod = "fallbackValidateCpf")
     public Mono<String> validateCpf(String cpf){
         return webClient
                 .get()
@@ -31,8 +31,8 @@ public class UserClient {
                 .bodyToMono(String.class);
     }
 
-    public Mono<String> fallback(Throwable throwable) {
-        log.warn("Fallback triggered for validateCpf due to: {}", throwable.getMessage());
+    public Mono<String> fallbackValidateCpf(String cpf, Exception throwable) {
+        log.warn("Fallback triggered for CPF validation: {}", throwable.getMessage());
         if(RandomUtils.nextBoolean()) {
             return Mono.just("ABLE_TO_VOTE");
         } else {

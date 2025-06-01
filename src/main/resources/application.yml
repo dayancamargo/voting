@@ -13,10 +13,6 @@ management:
 spring:
   application:
     name: voting
-#  datasource:
-#    url: "jdbc:postgresql://localhost:5432/postgres?currentSchema=votedb"
-#    username: dbuser
-#    password: dbpwd
   profiles:
     active: ${ENV_PROFILE:local}
   #banco
@@ -54,3 +50,21 @@ spring:
 api:
   user:
     url: "https://user-info.herokuapp.com/"
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        record-exceptions:
+          - java.lang.Exception
+          - java.lang.RuntimeException
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 1
+        failureRateThreshold: 100
+        minimumNumberOfCalls: 1
+        waitDurationInOpenState: 30000
+        registerHealthIndicator: true
+        permittedNumberOfCallsInHalfOpenState: 1
+    instances:
+      user-api:
+        baseConfig: default

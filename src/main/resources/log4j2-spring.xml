@@ -2,15 +2,8 @@
 <Configuration monitorInterval="5">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%X{traceId}] %style{%d{ISO8601}}{black} %highlight{%-5level} %style{%C{1.}}{bright,yellow}: tID=%X{traceId} - %msg%n%throwable" />
-        </Console>
-
-        <Console name="Console-external" target="SYSTEM_OUT">
-            <PatternLayout pattern="[%X{correlation}] %d %p ${spring:spring.application.name} %c{1.} %m%n"/>
-        </Console>
-
-        <Console name="Console-prd" target="SYSTEM_OUT">
-            <PatternLayout pattern="%d ${spring:spring.application.name} %p %C{1} %m%n"/>
+            <PatternLayout
+                    pattern="[%X{traceId}] %style{%d{ISO8601}}{black} %highlight{%-5level} %style{%C{1.}}{bright,yellow}: tID=%X{traceId} - %msg%n%throwable"/>
         </Console>
 
         <!-- Definicao de como onde sera gerado o arquivo que guarda os logs-->
@@ -36,35 +29,17 @@
 
     <Loggers>
         <!-- Em profiles que sejam diferentes dos utilizados em dev / prod aumenta nível de logs  -->
-        <SpringProfile name="!dev, !prod">
-            <Logger name="com.assessment.voting" level="debug" additivity="false">
-                <AppenderRef ref="Console"/>
-            </Logger>
-            <!-- Mostra logs das queries  -->
-            <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-                <AppenderRef ref="Console"/>
-            </Logger>
-        </SpringProfile>
+        <Logger name="com.assessment.voting" level="debug" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <!-- Mostra logs das queries  -->
+        <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
+        <Logger name="io.github.resilience4j" level="DEBUG" additivity="false">
+            <AppenderRef ref="Console"/>
+        </Logger>
 
-        <!-- Em profile de dev diminui quantidade de informação alterando o pattern utilizado em cada linha mas mantém como nível debug e adiciona salvamento em arquivo -->
-        <SpringProfile name="dev">
-            <Logger name="com.assessment.voting" level="debug" additivity="false">
-                <AppenderRef ref="Console-external"/>
-                <AppenderRef ref="RollingFile"/>
-            </Logger>
-            <!-- Mostra logs das queries  -->
-            <Logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
-                <AppenderRef ref="Console"/>
-            </Logger>
-        </SpringProfile>
-
-        <!-- Em profile de prod aumenta nível de log para manter apenas mensagens info e acima, além de remover o log das queries e ter o mínimo possível de dados logados -->
-        <SpringProfile name="prod">
-            <Logger name="com.assessment.voting" level="info" additivity="false">
-                <AppenderRef ref="RollingFile"/>
-                <AppenderRef ref="Console-prd"/>
-            </Logger>
-        </SpringProfile>
     </Loggers>
 
 </Configuration>

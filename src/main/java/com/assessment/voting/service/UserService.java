@@ -17,13 +17,11 @@ public class UserService {
         log.info("Validating CPF: {}", cpf);
         return userClient.validateCpf(cpf)
                 .flatMap(result -> {
-                    if(result.isEmpty()) {
-                        return Mono.error(new NotFoundException("User not found with CPF: " + cpf));
-                    }
                     if ("ABLE_TO_VOTE".equals(result)) {
                         return Mono.just(Boolean.TRUE);
                     }
                     return Mono.just(Boolean.FALSE);
-                });
+                })
+                .switchIfEmpty(Mono.error(new NotFoundException("User not found with CPF: " + cpf)));
     }
 }

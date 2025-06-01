@@ -41,7 +41,7 @@ public class AgendaController {
     }
 
     @PatchMapping("/open-session")
-    public Mono<String> openSession(@Valid @RequestBody OpenSessionRequest openSessionRequest) {
+    public Mono<AgendaResponse> openSession(@Valid @RequestBody OpenSessionRequest openSessionRequest) {
         log.info("Opening session: {}", openSessionRequest);
         return agendaService.openSession(openSessionRequest);
     }

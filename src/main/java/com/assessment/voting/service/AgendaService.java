@@ -46,27 +46,39 @@ public class AgendaService {
     }
 
     @Transactional
-    public Mono<String> openSession(OpenSessionRequest openSessionRequest) {
+    public Mono<AgendaResponse> openSession(OpenSessionRequest openSessionRequest) {
         log.info("Opening session for agenda with: {}", openSessionRequest);
+        var startSession = LocalDateTime.now();
+        var endSession = getEndSession(openSessionRequest, startSession);
 
         return agendaRepository.isAbleToOpen(openSessionRequest.agendaId())
                 .filter(isAble -> isAble)
                 .flatMap(isAble -> {
-                    var startSession = LocalDateTime.now();
-                    var endSession = getEndSession(openSessionRequest, startSession);
                     return agendaRepository.openSession(openSessionRequest.agendaId(), startSession, endSession)
-                            .map(updatedRows -> {
-                                if (updatedRows > 0) {
-                                    return "Session opened successfully for agenda with id: " + openSessionRequest.agendaId();
-                                }
-                                log.error("Failed to open session for agenda with id: {}", openSessionRequest.agendaId());
-                                throw new SessionCannotBeOpenedException("Failed to open session for agenda with id: " + openSessionRequest.agendaId());
-                            });
+                        .map(updatedRows -> {
+                            if (updatedRows > 0) {
+                                log.info("Session opened successfully for agenda with id: {}", openSessionRequest.agendaId());
+                                return new AgendaResponse(
+                                        openSessionRequest.agendaId(),
+                                        null,
+                                        startSession,
+                                        endSession
+                                );
+
+                            }
+                            log.error("Failed to open session for agenda with id: {}", openSessionRequest.agendaId());
+                            throw new SessionCannotBeOpenedException("Failed to open session for agenda with id: " + openSessionRequest.agendaId());
+                        });
                 })
                 .switchIfEmpty(Mono.error(new SessionCannotBeOpenedException("Could not find a agenda able to open with id: " + openSessionRequest.agendaId())));
     }
 
-    private static LocalDateTime getEndSession(OpenSessionRequest openSessionRequest, LocalDateTime startSession) {
+    private LocalDateTime getEndSession(OpenSessionRequest openSessionRequest, LocalDateTime startSession) {
+        if( openSessionRequest.quantity() == null || openSessionRequest.timeUnit() == null) {
+            log.warn("Quantity or time unit is null, defaulting to 1 minute");
+            return startSession.plusMinutes(1);
+        }
+
         return startSession.plus(openSessionRequest.quantity(), switch (TimeUnitEnum.fromString(openSessionRequest.timeUnit())) {
             case SECONDS -> ChronoUnit.SECONDS;
             case MINUTES -> ChronoUnit.MINUTES;
@@ -75,7 +87,7 @@ public class AgendaService {
         });
     }
 
-    private static Function<AgendaEntity, AgendaResponse> buildResponse() {
+    private Function<AgendaEntity, AgendaResponse> buildResponse() {
         return savedEntity -> new AgendaResponse(
                 savedEntity.getId(),
                 savedEntity.getName(),

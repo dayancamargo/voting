@@ -1,10 +1,10 @@
 package com.assessment.voting.controller;
 
-import com.assessment.voting.model.SimNaoEnum;
+import com.assessment.voting.model.enumType.SimNaoEnum;
 import com.assessment.voting.model.agenda.AgendaEntity;
-import com.assessment.voting.model.session.VoteEntity;
-import com.assessment.voting.repository.AgendaRepository;
-import com.assessment.voting.repository.VoteRepository;
+import com.assessment.voting.model.vote.VoteEntity;
+import com.assessment.voting.repository.postgres.AgendaRepository;
+import com.assessment.voting.repository.postgres.VoteRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @AutoConfigureMockMvc
 @AutoConfigureTestDatabase
 @ActiveProfiles("test")
-class BaseController {
+public class BaseController {
 
     @Autowired
     protected ObjectMapper objectMapper;

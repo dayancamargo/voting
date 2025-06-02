@@ -15,6 +15,13 @@ spring:
     name: voting
   profiles:
     active: ${ENV_PROFILE:local}
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: vote-db
+      username: userVote
+      password: pass
   #banco
   flyway:
     enabled: true

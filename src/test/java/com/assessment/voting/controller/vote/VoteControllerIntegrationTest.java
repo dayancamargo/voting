@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class VoteControllerTest extends BaseController {
+class VoteControllerIntegrationTest extends BaseController {
     @MockitoBean
     private UserClient userClient;
 

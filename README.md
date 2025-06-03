@@ -34,11 +34,12 @@ Apos isso, subir a aplicação com o comando:
 A aplicação possui uma collection do Postman para testes, que pode ser importada para realizar as validaçõe dos endpoints.
 
 ## Tecnologias utilizadas
-- Java 17
+- Java 21
 - Spring Boot
 - Spring Data JPA
 - PostgreSQL
 - MongoDB
+- H2
 - Docker
 - Postman
 - JUnit 5
@@ -90,3 +91,5 @@ Os testes de integração utilizam um banco em memória H2 para simular o ambien
 
 Foram criadas 2 versões do endpoint de votação, uma para a versão mobile e outra para a versão web, permitindo que a aplicação atenda a diferentes necessidades de usuários,
 sendo a versão mobile retornado informações das telas que serão utilizadas, e a versão web mais enxuta, contendo apenas as informações necessárias para a votação.
+
+Alguns enuns foram criados para abstrair a implementação de outras tabelas auxiliares.

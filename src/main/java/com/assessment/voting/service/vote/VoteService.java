@@ -1,5 +1,6 @@
 package com.assessment.voting.service.vote;
 
+import com.assessment.voting.dto.vote.TotalVotes;
 import com.assessment.voting.exception.CpfUnableToVote;
 import com.assessment.voting.exception.NotFoundException;
 import com.assessment.voting.exception.SessionNotOpenedException;
@@ -7,7 +8,6 @@ import com.assessment.voting.exception.CpfAlreadyVoted;
 import com.assessment.voting.model.enumType.SimNaoEnum;
 import com.assessment.voting.dto.agenda.AgendaResponse;
 import com.assessment.voting.model.vote.VoteEntity;
-import com.assessment.voting.dto.agenda.TotalVotes;
 import com.assessment.voting.dto.vote.VoteRequest;
 import com.assessment.voting.dto.vote.VoteResponse;
 import com.assessment.voting.repository.postgres.VoteRepository;

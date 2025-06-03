@@ -1,6 +1,10 @@
 package com.assessment.voting.service.agenda;
 
-import com.assessment.voting.dto.agenda.*;
+import com.assessment.voting.dto.agenda.AgendaMobileRequest;
+import com.assessment.voting.dto.agenda.AgendaRequest;
+import com.assessment.voting.dto.agenda.AgendaResponse;
+import com.assessment.voting.dto.agenda.OpenSessionMobileRequest;
+import com.assessment.voting.dto.agenda.OpenSessionRequest;
 import com.assessment.voting.model.enumType.ScreenType;
 import com.assessment.voting.model.mobile.Item;
 import com.assessment.voting.model.mobile.Screen;
@@ -59,18 +63,23 @@ public class AgendaMobileService {
         return screenService.getScreen(ScreenType.FORM_INICIA_PAUTA)
                 .map(screenEntity -> {
                     log.info("Get start session form agenda {}", agenda.id());
-                    screenEntity.getItens().stream()
-                            .filter(item -> item.getId() != null)
-                            .forEach(item -> {
-                                switch (item.getId()) {
-                                    case "idAgenda" -> item.setValor(agenda.id().toString());
-                                    case "idNomeAgenda" -> item.setValor(agenda.name());
-                                    case "quantidadeDeTempo" -> item.setValor("");
-                                    case "unidadeTempo" -> item.setValor("");
-                                }
-                            });
-                    screenEntity.getBotaoOk().setUrl(screenService.generateActionUrl(exchange, screenEntity.getBotaoOk().getUrl()));
-                    screenEntity.getBotaoCancelar().setUrl(screenService.generateActionUrl(exchange, screenEntity.getBotaoCancelar().getUrl()));
+                    if(screenEntity.getItens() != null) {
+                        screenEntity.getItens().stream()
+                                .filter(item -> item.getId() != null)
+                                .forEach(item -> {
+                                    switch (item.getId()) {
+                                        case "idAgenda" -> item.setValor(agenda.id().toString());
+                                        case "idNomeAgenda" -> item.setValor(agenda.name());
+                                        case "quantidadeDeTempo" -> item.setValor("");
+                                        case "unidadeTempo" -> item.setValor("");
+                                    }
+                                });
+                    }
+                    if(screenEntity.getBotaoOk() != null)
+                        screenEntity.getBotaoOk().setUrl(screenService.generateActionUrl(exchange, screenEntity.getBotaoOk().getUrl()));
+                    if(screenEntity.getBotaoCancelar() != null)
+                        screenEntity.getBotaoCancelar().setUrl(screenService.generateActionUrl(exchange, screenEntity.getBotaoCancelar().getUrl()));
+
                     return screenEntity;
                 });
     }
@@ -86,8 +95,11 @@ public class AgendaMobileService {
                                     item.setValor(agenda.id().toString());
                                 }
                             });
-                    screenEntity.getBotaoOk().setUrl(screenService.generateActionUrl(exchange, screenEntity.getBotaoOk().getUrl()));
-                    screenEntity.getBotaoCancelar().setUrl(screenService.generateActionUrl(exchange, screenEntity.getBotaoCancelar().getUrl()));
+                    if(screenEntity.getBotaoOk() != null)
+                        screenEntity.getBotaoOk().setUrl(screenService.generateActionUrl(exchange, screenEntity.getBotaoOk().getUrl()));
+                    if(screenEntity.getBotaoCancelar() != null)
+                        screenEntity.getBotaoCancelar().setUrl(screenService.generateActionUrl(exchange, screenEntity.getBotaoCancelar().getUrl()));
+
                     return screenEntity;
                 });
     }

@@ -9,7 +9,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.http.MediaType;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class AgendaControllerTest extends BaseController {
+class AgendaControllerIntegrationTest extends BaseController {
 
     @BeforeEach
     public void cleanUp() {
